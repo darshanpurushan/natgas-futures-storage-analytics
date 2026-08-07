@@ -1,8 +1,7 @@
 # Natural Gas Futures Curve & Storage Analytics
 
-Beginner-friendly Python research project for Henry Hub futures-curve analytics, EIA storage, weather extensions, and a transparent calendar-spread backtest.
+research project for Henry Hub futures-curve analytics, EIA storage, weather extensions, and a transparent calendar-spread backtest.
 
-**Research/education only — not investment advice.**
 
 ## Quick start
 
