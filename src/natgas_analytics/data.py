@@ -25,14 +25,17 @@ def make_demo_curve(start="2018-01-01", end="2025-12-31", seed=7):
 
 
 def load_curve_csv(path):
-    df = pd.read_csv(path, parse_dates=["date"])
+    df = pd.read_csv(path)
     required = {"date", "contract", "price"}
     missing = required - set(df.columns)
     if missing:
         raise ValueError(f"Curve CSV is missing columns: {sorted(missing)}")
+    df["date"] = pd.to_datetime(df["date"])
+    # Preserve missing contract values until they can be filtered out.
+    df = df.dropna(subset=["date", "contract"])
     df["contract"] = df["contract"].astype(str)
     df["price"] = pd.to_numeric(df["price"], errors="coerce")
-    return df.dropna(subset=["date", "contract", "price"]).sort_values(
+    return df.loc[np.isfinite(df["price"])].sort_values(
         ["date", "contract"]
     )
 
