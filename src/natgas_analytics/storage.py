@@ -49,16 +49,19 @@ def make_demo_storage(start="2018-01-01", end="2025-12-31", seed=7):
 
 
 def storage_features(storage, lookback=52):
+    if isinstance(lookback, bool) or not isinstance(lookback, int) or lookback < 2:
+        raise ValueError("lookback must be an integer of at least 2")
+    min_periods = min(12, lookback)
     df = storage.copy().sort_values("date")
     df["storage_change_bcf"] = df["storage_bcf"].diff()
     df["seasonal_change_mean"] = df["storage_change_bcf"].rolling(
-        lookback, min_periods=12
+        lookback, min_periods=min_periods
     ).mean()
     df["storage_surprise_bcf"] = (
         df["storage_change_bcf"] - df["seasonal_change_mean"]
     )
     std = df["storage_surprise_bcf"].rolling(
-        lookback, min_periods=12
+        lookback, min_periods=min_periods
     ).std()
     df["storage_surprise_z"] = df["storage_surprise_bcf"] / std.replace(0, pd.NA)
     return df
