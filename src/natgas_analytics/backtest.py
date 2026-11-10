@@ -27,10 +27,17 @@ def build_signals(df, storage_z_threshold=1.0, spread_z_threshold=1.0):
 
 def run_backtest(df, transaction_cost=0.0005):
     x = build_signals(df)
-    x["spread_return"] = x["calendar_spread"].pct_change()
+    # Normalize by spread magnitude: a long spread benefits from a rising
+    # value even when the starting spread is negative. A zero denominator
+    # cannot define an active normalized return.
+    x["spread_return"] = x["calendar_spread"].diff() / x["calendar_spread"].shift(1).abs()
+    active = x["position"] != 0
+    if (active & ~np.isfinite(x["spread_return"])).any():
+        raise ValueError("Cannot value undefined active spread returns")
     x["turnover"] = x["position"].diff().abs().fillna(x["position"].abs())
     x["strategy_return"] = (
-        x["position"] * x["spread_return"] - transaction_cost * x["turnover"]
+        (x["position"] * x["spread_return"]).where(active, 0.)
+        - transaction_cost * x["turnover"]
     )
     x["equity"] = (1 + x["strategy_return"].fillna(0)).cumprod()
     return x, performance_metrics(x["strategy_return"])
