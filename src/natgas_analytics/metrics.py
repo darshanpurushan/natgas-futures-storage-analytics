@@ -4,7 +4,14 @@ import numpy as np
 import pandas as pd
 
 
+def _validate_returns(returns):
+    observed = returns.dropna()
+    if (~np.isfinite(observed) | (observed < -1)).any():
+        raise ValueError("Returns must be finite and no lower than -100%")
+
+
 def max_drawdown(returns):
+    _validate_returns(returns)
     wealth = (1 + returns.fillna(0)).cumprod()
     # Start the high-water mark at the initial unit of capital so that
     # losses on the first observation count toward drawdown.
@@ -12,6 +19,9 @@ def max_drawdown(returns):
 
 
 def performance_metrics(returns, periods_per_year=52):
+    # Negative wealth factors can cancel, disguising invalid paths as a
+    # plausible terminal return. Reject them before geometric compounding.
+    _validate_returns(returns)
     r = returns.dropna()
     if r.empty:
         return {
