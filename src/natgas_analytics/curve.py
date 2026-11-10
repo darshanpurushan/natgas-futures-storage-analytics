@@ -19,8 +19,12 @@ def add_curve_metrics(curve):
     order = np.argsort(periods.asi8)
     matrix = matrix.iloc[:, order]
 
-    front = matrix.iloc[:, 0]
-    second = matrix.iloc[:, 1]
+    # Listed maturities change over time. Select the nearest two observed
+    # contracts per date instead of fixing the first pair in the history.
+    available_order = np.argsort(matrix.isna().to_numpy(), axis=1, kind="stable")
+    nearest = np.take_along_axis(matrix.to_numpy(), available_order[:, :2], axis=1)
+    front = pd.Series(nearest[:, 0], index=matrix.index)
+    second = pd.Series(nearest[:, 1], index=matrix.index)
 
     out = pd.DataFrame(index=matrix.index)
     out["front_price"] = front
@@ -32,6 +36,7 @@ def add_curve_metrics(curve):
         "contango",
         np.where(out["calendar_spread"] < 0, "backwardation", "flat"),
     )
+    out["curve_state"] = out["curve_state"].where(front.notna() & second.notna())
     out["annualized_roll_yield_proxy"] = (second / front) ** 12 - 1
     return out
 
