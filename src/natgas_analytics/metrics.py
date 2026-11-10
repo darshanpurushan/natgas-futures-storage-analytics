@@ -6,7 +6,9 @@ import pandas as pd
 
 def max_drawdown(returns):
     wealth = (1 + returns.fillna(0)).cumprod()
-    return float((wealth / wealth.cummax() - 1).min())
+    # Start the high-water mark at the initial unit of capital so that
+    # losses on the first observation count toward drawdown.
+    return float((wealth / wealth.cummax().clip(lower=1.0) - 1).min())
 
 
 def performance_metrics(returns, periods_per_year=52):
