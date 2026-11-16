@@ -7,6 +7,8 @@ from .metrics import performance_metrics
 
 def build_signals(df, storage_z_threshold=1.0, spread_z_threshold=1.0):
     x = df.copy().sort_values("date")
+    if x["date"].isna().any() or x["date"].duplicated().any():
+        raise ValueError("Signal dates must be present and unique")
     mean = x["calendar_spread"].rolling(52, min_periods=12).mean()
     std = x["calendar_spread"].rolling(52, min_periods=12).std()
     x["spread_z"] = (x["calendar_spread"] - mean) / std.replace(0, np.nan)
