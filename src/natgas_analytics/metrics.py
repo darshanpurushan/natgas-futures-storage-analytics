@@ -19,6 +19,8 @@ def max_drawdown(returns):
 
 
 def performance_metrics(returns, periods_per_year=52):
+    if not np.isfinite(periods_per_year) or periods_per_year <= 0:
+        raise ValueError("periods_per_year must be finite and positive")
     # Negative wealth factors can cancel, disguising invalid paths as a
     # plausible terminal return. Reject them before geometric compounding.
     _validate_returns(returns)
