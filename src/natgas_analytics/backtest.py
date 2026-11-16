@@ -26,6 +26,8 @@ def build_signals(df, storage_z_threshold=1.0, spread_z_threshold=1.0):
 
 
 def run_backtest(df, transaction_cost=0.0005):
+    if not np.isfinite(transaction_cost) or transaction_cost < 0:
+        raise ValueError("transaction_cost must be finite and nonnegative")
     x = build_signals(df)
     # Normalize by spread magnitude: a long spread benefits from a rising
     # value even when the starting spread is negative. A zero denominator
