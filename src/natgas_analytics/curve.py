@@ -5,6 +5,8 @@ import pandas as pd
 
 
 def curve_matrix(curve):
+    if curve.duplicated(["date", "contract"]).any():
+        raise ValueError("Curve must contain one quote per date and contract")
     return curve.pivot_table(
         index="date", columns="contract", values="price", aggfunc="last"
     ).sort_index(axis=1)
