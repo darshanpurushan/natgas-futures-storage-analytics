@@ -25,6 +25,12 @@ def run(curve, storage):
         direction="backward",
     ).dropna(subset=["storage_surprise_z", "calendar_spread"])
 
+    if research.empty:
+        raise ValueError(
+            "No usable research observations after aligning curve and storage data; "
+            "check date overlap and storage feature warm-up."
+        )
+
     backtest, metrics = run_backtest(research)
 
     curve_metrics.to_csv(DATA_PROCESSED / "curve_metrics.csv", index=False)
