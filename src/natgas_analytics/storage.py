@@ -53,6 +53,8 @@ def storage_features(storage, lookback=52):
         raise ValueError("lookback must be an integer of at least 2")
     min_periods = min(12, lookback)
     df = storage.copy().sort_values("date")
+    if df["date"].isna().any() or df["date"].duplicated().any():
+        raise ValueError("Storage dates must be present and unique")
     df["storage_change_bcf"] = df["storage_bcf"].diff()
     df["seasonal_change_mean"] = df["storage_change_bcf"].rolling(
         lookback, min_periods=min_periods
